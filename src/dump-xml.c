@@ -396,3 +396,308 @@ void xml_dump(FILE * dest, pList transponders)
 */
 
 }
+
+
+void xml_dump_transponders(FILE* dest, pList transponders) {
+
+  struct transponder * t;
+  int indent = 1;
+
+  fprintf(dest, "%s<transponders>\n", get_indent(indent));  
+
+  for(t = transponders->first; t; t = t->next) {
+		indent++;
+		fprintf(dest, "%s<transponder ONID=\"%d\" NID=\"%d\" TSID=\"%d\">\n",
+					get_indent(indent),
+					t->original_network_id,
+					t->network_id,
+					t->transport_stream_id
+				);
+		indent++;
+		fprintf(dest, "%s<delivery_system>%s</delivery_system>\n", get_indent(indent), delivery_system_name(t->delsys));
+		fprintf(dest, "%s<frequency>%.3f</frequency>\n", get_indent(indent), (double) t->frequency/1e6);
+	 // fprintf(dest, "%s<params delsys=\"%s\" center_frequency=\"%.3f\">\n",
+	 //		get_indent(indent), delivery_system_name(t->delsys), (double) t->frequency/1e6);
+		//indent++;
+	
+		switch(t->delsys) {
+			case SYS_DVBT:
+			case SYS_DVBT2:
+			{
+			//		   if needs_param(modulation)
+				fprintf(dest, "%s<modulation>%s</modulation>\n", get_indent(indent), modulation_name(t->modulation));
+				
+				if needs_param(bandwidth)
+					fprintf(dest, "%s<bandwidth>%.3f</bandwidth>\n", get_indent(indent), (double) t->bandwidth/1e6);  
+				if needs_param(coderate)
+					fprintf(dest, "%s<coderate>%s</coderate>\n", get_indent(indent), coderate_name(t->coderate)); 
+				if needs_param(symbolrate)
+					fprintf(dest, "%s<symbolrate>%ui</symbolrate>\n", get_indent(indent), t->symbolrate); 
+				if needs_param(transmission)
+					fprintf(dest, "%s<transmission>%s</transmission>\n", get_indent(indent), transmission_mode_name(t->transmission)); 
+				if needs_param(guard)
+					fprintf(dest, "%s<guard>%s</guard>\n", get_indent(indent), guard_interval_name(t->guard)); 
+				if (t->hierarchy != HIERARCHY_NONE) {
+               // print those only if hierarchy is used.
+               if needs_param(hierarchy)
+               fprintf(dest, "%s<hierarchy>%s</hierarchy>\n", get_indent(indent), hierarchy_name(t->hierarchy));
+               
+               if needs_param(alpha)
+                  fprintf(dest, "%s<alpha>%s</alpha>\n", get_indent(indent), alpha_name(t->alpha));
+               if needs_param(terr_interleaver)
+                  fprintf(dest, "%s<terr_interleaver>%s</terr_interleaver>\n", get_indent(indent), interleaver_name(t->terr_interleaver));
+               if needs_param(coderate_LP)
+                  fprintf(dest, "%s<coderate_LP>%s</coderate_LP>\n", get_indent(indent), coderate_name(t->coderate_LP));
+               if needs_param(priority)
+                  fprintf(dest, "%s<priority>%s</priority>\n", get_indent(indent), bool_name(t->priority));
+				}
+				if needs_param(mpe_fec)
+					fprintf(dest, "%s<mpe_fec>%s</mpe_fec>\n", get_indent(indent), bool_name(t->mpe_fec));
+				if needs_param(time_slicing)
+					fprintf(dest, "%s<time_slicing>%s</time_slicing>\n", get_indent(indent), bool_name(t->time_slicing)); 
+				if needs_param(system_id)
+					fprintf(dest, "%s<system_id>%d</system_id>\n", get_indent(indent), t->system_id);
+				if needs_param(plp_id)
+					fprintf(dest, "%s<plp_id>%d</plp_id>\n", get_indent(indent), t->plp_id); 
+	 
+				if ((t->other_frequency_flag != false) && ((t->cells)->count > 0)) {
+					struct cell* f;
+					
+					if needs_param(other_frequency_flag) {
+						fprintf(dest, "%s<other_frequency_flag>%s</other_frequency_flag>\n", get_indent(indent), bool_name(true));
+						fprintf(dest, "%s<frequency_list>\n", get_indent(indent));
+						indent++;
+						for(f = t->cells->first; f; f = f->next) {
+							
+							if (t->tfs_flag) {
+								 fprintf(dest, "%s<tfs_center>\n", get_indent(indent));
+							}
+							else {
+								 //for(g = f->transposers->first; g; g = g->next) {
+								 //   }
+							}
+						}
+		
+						indent--;
+						fprintf(dest, "%s</frequency_list>\n", get_indent(indent));
+					}
+				}
+				break;
+			}
+			case SYS_DVBS2:
+			case SYS_DVBS:
+			{
+				char pol = 0;
+ //		   if needs_param(modulation)
+				fprintf(dest, "%s<modulation>%s</modulation>\n", get_indent(indent), modulation_name(t->modulation));            
+				if needs_param(bandwidth)
+					fprintf(dest, "%s<bandwidth>%.3f</bandwidth>\n", get_indent(indent), (double) t->bandwidth/1e6);  
+				//if needs_param(coderate)
+				fprintf(dest, "%s<coderate>%s</coderate>\n", get_indent(indent), coderate_name(t->coderate)); 
+	//		   if needs_param(symbolrate)
+				fprintf(dest, "%s<symbolrate>%u</symbolrate>\n", get_indent(indent), t->symbolrate/1000); 
+	//		   if needs_param(polarization) {
+			 
+				switch (t->polarization) {
+					case POLARIZATION_HORIZONTAL:
+						pol = 'H';
+						break;
+					case POLARIZATION_VERTICAL:
+						pol = 'V';
+						break;
+					default:
+						break;
+			 }
+			 
+			 fprintf(dest, "%s<polarization>%c</polarization>\n", get_indent(indent), pol); 
+	//		   }
+				break;
+			}
+				 
+			default:
+				//fatal("unimplemented delivery system \"%s\"for w_scan XML output\n",
+				//	 delivery_system_name(t->delsys));
+				error("unimplemented delivery system for w_scan XML output\n");
+		} 
+	
+	
+	
+		indent--;     
+		fprintf(dest, "%s</transponder>\n", get_indent(indent));
+		indent--;
+	}
+
+  fprintf(dest, "%s</transponders>\n", get_indent(indent));
+}
+
+void xml_dump_prolog(FILE* dest) {
+  
+  fprintf(dest, "<?xml version=\"1.0\" encoding=\"iso-8859-1\" standalone=\"yes\"?>\n");
+  fprintf(dest, "<service_list>\n");
+/*
+  fprintf(dest, "<!DOCTYPE service_list SYSTEM \"http://wirbel.htpc-forum.de/w_scan/dtd/service_list.dtd\">\n");
+  fprintf(dest, "\n");
+  fprintf(dest, "<!-- NOTE:\n");
+  fprintf(dest, "     if reading or writing w_scan XML file format:\n");
+  fprintf(dest, "        - please validate XML against DTD above.\n");
+  fprintf(dest, "        - indent each XML element\n");
+  fprintf(dest, "        - indent using three spaces, dont use <TAB> char to indent.\n");
+  fprintf(dest, "        - conform to requirements mentionend in DTD file.\n");
+  fprintf(dest, " -->\n\n");
+*/
+}
+
+void xml_dump_epilog(FILE* dest) {
+  fprintf(dest, "</service_list>\n");
+}
+
+void xml_dump_service_parameter_set (FILE * f, struct service * s, struct transponder * t, struct w_scan_flags * flags)
+{
+  char buffer[1024] = { 0 };
+  
+	  int indent = 2;
+	  
+		//if (s->video_pid || s->audio_pid[0]) {
+		//        if (s->provider_name)
+		//                fprintf (f, "%s(%s):", s->service_name, s->provider_name);
+		//        else
+		//                fprintf (f, "%s:", s->service_name);
+		//        xml_dump_dvb_parameters (f, t, flags);
+		//        fprintf (f, ":%i:%i:%i", s->video_pid, s->ac3_pid[0]?s->ac3_pid[0]:s->audio_pid[0], s->service_id);
+		//        /* what about AC3 audio here && multiple audio pids? see also: dump_mplayer.c/h */
+		//        fprintf (f, "\n");
+		//        }
+	  
+	  fprintf(f, "%s<service ONID=\"%u\" TSID=\"%u\" SID=\"%u\">\n",
+         get_indent(indent), t->original_network_id, t->transport_stream_id, s->service_id);
+	  indent++;
+	  
+	//   fprintf(f, "%s<network_id>%u</network_id>\n", get_indent(indent), t->original_network_id);
+	//   fprintf(f, "%s<stream_id>%u</stream_id>\n", get_indent(indent), t->transport_stream_id);
+	//   fprintf(f, "%s<service_id>%u</service_id>\n", get_indent(indent), s->service_id);
+
+	  xml_encode_entities(s->service_name, buffer);
+	  //fprintf(f, "%s<name char256=\"%s\"/>\n", get_indent(indent), s->service_name);
+	  fprintf(f, "%s<name char256=\"%s\"/>\n", get_indent(indent), buffer);
+	  fprintf(f, "%s<provider char256=\"%s\"/>\n", get_indent(indent), s->provider_name);
+	  fprintf(f, "%s<pcr pid=\"%u\"/>\n", get_indent(indent), s->pcr_pid);
+	  fprintf(f, "%s<logical channel_number=\"%u\"/>\n", get_indent(indent), s->logical_channel_number);
+
+      fprintf(f, "%s<streams>\n", get_indent(indent));
+      indent++;
+      // Video Stream
+      fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"VIDEO\"/>\n", get_indent(indent), s->video_stream_type, s->video_pid);
+      // Audio Streams
+      for (int i=0; i<AUDIO_CHAN_MAX; i++) {
+         if (s->audio_stream_type[i])
+            fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"AUDIO\" language_code=\"%s\"/>\n",
+               get_indent(indent),
+               s->audio_stream_type[i],
+               s->audio_pid[i],
+               s->audio_lang[i]);
+      }
+      // AC3 Streams
+      for (int i=0; i<AC3_CHAN_MAX; i++) {
+         if (s->ac3_stream_type[i])
+            fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"AC3 AUDIO\" language_code=\"%s\"/>\n",
+               get_indent(indent),
+               s->ac3_stream_type[i],
+               s->ac3_pid[i],
+               s->ac3_lang[i]);
+      }
+      indent--;
+      fprintf(f, "%s</streams>\n", get_indent(indent));
+      fprintf(f, "%s<subtitles>\n", get_indent(indent));
+      indent++;
+      // Subtitles
+      for (int i=0; i<SUBTITLES_MAX; i++) {
+         if (s->subtitling_pid[i])
+            fprintf(f, "%s<subtitle pid=\"%u\" type=\"%u\" composition_page=\"%u\" ancillary_page=\"%u\" language_code=\"%s\"/>\n",
+               get_indent(indent),
+               s->subtitling_pid[i],
+               s->subtitling_type[i],
+               s->composition_page_id[i],
+               s->ancillary_page_id[i],
+               s->subtitling_lang[i]);
+      }
+      indent--;
+      fprintf(f, "%s</subtitles>\n", get_indent(indent));
+      fprintf(f, "%s<CA_systems>\n", get_indent(indent));
+      indent++;
+      for (int i=0; i<CA_SYSTEM_ID_MAX; i++) {
+         if (s->ca_id[i])
+            fprintf(f, "%sCA_system name=\"CA_System_Dummy\" ca_id=\"%u\"\n", get_indent(indent),s->ca_id[i]);
+      }
+      indent--;
+      fprintf(f, "%s</CA_systems>\n", get_indent(indent));
+      fprintf(f, "%s<comment char256=\"\"/>\n", get_indent(indent));
+	  indent--;
+	  fprintf(f, "%s</service>\n", get_indent(indent));
+}
+
+
+/*
+
+<service_list>
+   <services>
+      <service ONID="8438" TSID="13057" SID="102">
+         <name char256="Nelonen Pro 2 HD"/>
+         <provider char256="DNA"/>
+         <pcr pid="213"/>
+         <streams>
+            <stream type="27" pid="213" description="AVC Video stream, ITU-T Rec. H.264 | ISO/IEC 14496-10"/>
+            <stream type="4" pid="330" description="AUDIO" language_code="fin"/>
+         </streams>
+         <CA_systems>
+            <CA_system name="Conax" ca_id="0x0B00"/>
+            <CA_system name="Conax" ca_id="0x0B02"/>
+         </CA_systems>
+         <comment char256="Nelonen Pro 2 HD is twice on 177.5MHz"/>
+      </service>
+   </services>
+</service_list>
+*/
+void xml_dump_services_open(FILE* dest) { fprintf(dest, "%s<services>\n", get_indent(1)); }
+void xml_dump_services_close(FILE* dest) { fprintf(dest, "%s</services>\n", get_indent(1)); }
+
+void xml_encode_entities(char *src, char *dst)
+{
+  if (src != NULL) {
+    
+    int len = 0;
+    int i   = 0;
+    int a   = 0;
+    
+    len = strlen(src);
+    
+    for (i=0;i<len;i++) {
+      
+      switch ( src[i] ) {
+        case '"':
+          sprintf(&dst[a], "&quot;");
+          a += 6;
+          break;
+        case '\'':
+          sprintf(&dst[a], "&apos;");
+          a += 6;
+          break;
+        case '<':
+          sprintf(&dst[a], "&lt;");
+          a += 4;
+          break;
+        case '>':
+          sprintf(&dst[a], "&gt;");
+          a += 4;
+          break;
+        case '&':
+          sprintf(&dst[a], "&amp;");
+          a += 5;
+          break;
+        default:
+          dst[a] = src[i];
+          a++;
+          break;
+      }
+    }
+  }
+}

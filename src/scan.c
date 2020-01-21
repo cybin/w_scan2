@@ -3714,7 +3714,10 @@ static void dump_lists(int adapter, int frontend)
 		vlc_xspf_prolog(dest, adapter, frontend, &flags, &this_lnb);
 		break;
 	case OUTPUT_XML:
-		xml_dump(dest, scanned_transponders);
+      xml_dump_prolog(dest);
+      xml_dump_transponders(dest, scanned_transponders);
+		// xml_dump(dest, scanned_transponders);
+      xml_dump_services_open(dest);
 		break;
 	default:;
 	}
@@ -3767,6 +3770,9 @@ static void dump_lists(int adapter, int frontend)
 				vlc_dump_service_parameter_set_as_xspf
 				    (dest, s, t, &flags, &this_lnb);
 				break;
+         case OUTPUT_XML:
+            xml_dump_service_parameter_set(dest, s, t, &flags);
+            break;
 			default:
 				break;
 			}
@@ -3776,6 +3782,10 @@ static void dump_lists(int adapter, int frontend)
 	case OUTPUT_VLC_M3U:
 		vlc_xspf_epilog(dest);
 		break;
+   case OUTPUT_XML:
+      xml_dump_services_close(dest);
+      xml_dump_epilog(dest);
+      break;
 	default:;
 	}
 	fflush(stderr);

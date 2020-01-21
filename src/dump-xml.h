@@ -25,6 +25,16 @@
 #include <stdio.h>
 #include "tools.h"
 
+extern struct w_scan_flags;
+
 void xml_dump(FILE * dest, pList transponders);
+void xml_dump_transponders(FILE* dest, pList transponders);
+void xml_dump_prolog(FILE* dest);
+void xml_dump_epilog(FILE* dest);
+
+void xml_dump_services_open(FILE* dest);
+void xml_dump_service_parameter_set (FILE * f, struct service * s, struct transponder * t, struct w_scan_flags * flags);
+void xml_dump_services_close(FILE* dest);
+void xml_encode_entities(char *src, char *dst);
 
 #endif
