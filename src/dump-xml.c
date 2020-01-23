@@ -586,23 +586,29 @@ void xml_dump_service_parameter_set (FILE * f, struct service * s, struct transp
       fprintf(f, "%s<streams>\n", get_indent(indent));
       indent++;
       // Video Stream
-      fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"VIDEO\"/>\n", get_indent(indent), s->video_stream_type, s->video_pid);
+      fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"%s\"/>\n",
+         get_indent(indent),
+         s->video_stream_type,
+         s->video_pid,
+         get_stream_type_description(s->video_stream_type));
       // Audio Streams
       for (int i=0; i<AUDIO_CHAN_MAX; i++) {
          if (s->audio_stream_type[i])
-            fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"AUDIO\" language_code=\"%s\"/>\n",
+            fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"%s\" language_code=\"%s\"/>\n",
                get_indent(indent),
                s->audio_stream_type[i],
                s->audio_pid[i],
+               get_stream_type_description(s->audio_stream_type[i]),
                s->audio_lang[i]);
       }
       // AC3 Streams
       for (int i=0; i<AC3_CHAN_MAX; i++) {
          if (s->ac3_stream_type[i])
-            fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"AC3 AUDIO\" language_code=\"%s\"/>\n",
+            fprintf(f, "%s<stream type=\"%u\" pid=\"%u\" description=\"%s\" language_code=\"%s\"/>\n",
                get_indent(indent),
                s->ac3_stream_type[i],
                s->ac3_pid[i],
+               get_stream_type_description(s->ac3_stream_type[i]),
                s->ac3_lang[i]);
       }
       indent--;

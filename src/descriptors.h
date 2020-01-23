@@ -170,6 +170,43 @@ enum _stream_type {
 	atsc_a_52b_ac3 = 0x81,	// ac-3 @ atsc
 };
 
+typedef struct {
+   int type;
+   char *description;
+} stream_descr_mapping;
+
+static const stream_descr_mapping stream_type_descr_mappings[] = {
+	{iso_iec_11172_video_stream, "iso_iec_11172_video_stream"},
+	{iso_iec_13818_1_11172_2_video_stream, "iso_iec_13818_1_11172_2_video_stream"},
+	{iso_iec_11172_audio_stream, "iso_iec_11172_audio_stream"},
+	{iso_iec_13818_3_audio_stream, "iso_iec_13818_3_audio_stream"},
+	{iso_iec_13818_1_private_sections, "iso_iec_13818_1_private_sections"},
+	{iso_iec_13818_1_private_data, "iso_iec_13818_1_private_data"},
+	{iso_iec_13522_MHEG, "iso_iec_13522_MHEG"},
+	{iso_iec_13818_1_Annex_A_DSM_CC, "iso_iec_13818_1_Annex_A_DSM_CC"},
+	{iso_iec_13818_1_11172_1_auxiliary, "iso_iec_13818_1_11172_1_auxiliary"},
+	{iso_iec_13818_6_type_a_multiproto_encaps, "iso_iec_13818_6_type_a_multiproto_encaps"},
+	{iso_iec_13818_6_type_b, "iso_iec_13818_6_type_b"},
+	{iso_iec_13818_6_type_c, "iso_iec_13818_6_type_c"},
+	{iso_iec_13818_6_type_d, "iso_iec_13818_6_type_d"},
+	{iso_iec_13818_1_auxiliary, "iso_iec_13818_1_auxiliary"},
+	{iso_iec_13818_7_audio_w_ADTS_transp, "iso_iec_13818_7_audio_w_ADTS_transp"},
+	{iso_iec_14496_2_visual, "iso_iec_14496_2_visual"},
+	{iso_iec_14496_3_audio_w_LATM_transp, "iso_iec_14496_3_audio_w_LATM_transp"},
+	{iso_iec_14496_1_packet_stream_in_PES, "iso_iec_14496_1_packet_stream_in_PES"},
+	{iso_iec_14496_1_packet_stream_in_14996, "iso_iec_14496_1_packet_stream_in_14996"},
+	{iso_iec_13818_6_synced_download_protocol, "iso_iec_13818_6_synced_download_protocol"},
+	{metadata_in_PES, "metadata_in_PES"},
+	{metadata_in_metadata_sections, "metadata_in_metadata_sections"},
+	{metadata_in_iso_iec_13818_6_data_carous, "metadata_in_iso_iec_13818_6_data_carous"},
+	{metadata_in_iso_iec_13818_6_obj_carous, "metadata_in_iso_iec_13818_6_obj_carous"},
+	{metadata_in_iso_iec_13818_6_synced_dl, "metadata_in_iso_iec_13818_6_synced_dl"},
+	{iso_iec_13818_11_IPMP_stream, "iso_iec_13818_11_IPMP_stream"},
+	{iso_iec_14496_10_AVC_video_stream, "iso_iec_14496_10_AVC_video_stream"},
+	{iso_iec_23008_2_H265_video_hevc_stream, "iso_iec_23008_2_H265_video_hevc_stream"},
+	{atsc_a_52b_ac3, "atsc_a_52b_ac3"}
+};
+
 /******************************************************************************
  * table ids as defined by standards.
  *
@@ -365,5 +402,7 @@ void parse_atsc_extended_channel_name_descriptor(struct service *s,
 const char *network_id_desc(uint16_t network_id);
 
 int crc_check(const unsigned char *buf, __u16 len);
+
+char *get_stream_type_description(unsigned int type);
 
 #endif

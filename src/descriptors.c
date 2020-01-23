@@ -2623,3 +2623,16 @@ int crc_check(const unsigned char *buf, __u16 len)
 		return 0;
 	}
 }
+
+char *get_stream_type_description(unsigned int type) {
+
+   char *result = NULL;
+
+   for (int i = 0; i < sizeof(stream_type_descr_mappings) / sizeof(stream_descr_mapping); i++) {
+
+      if (stream_type_descr_mappings[i].type == type)
+         result = stream_type_descr_mappings[i].description;
+   }
+
+   return result;
+}
